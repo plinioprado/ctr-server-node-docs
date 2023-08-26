@@ -1,28 +1,27 @@
 // install route
 
 const express = require('express');
-const installControllerBase = require('../../base/controller/install');
-const installControllerDocs = require('../controllers/install')
+const controller = require('../../base/controller/install');
 const logger = require('../../base/controller/logger');
 
 const router = express.Router();
 
 router.get('/resetdb', async (req, res) => {
-
   try {
-    logger.log('router install will reset base');
+    logger.log('router install will reset db');
 
-    const baseData = await installControllerBase.resetDb();
-    logger.log('router did reset base db and got', baseData);
+    let result = await controller.resetDb(__dirname + '/../../base/dao/install-base.sql');
+    logger.log(`router did route base resetdb and got ${JSON.stringify(result)}`);
 
-    const baseDocs= await installControllerDocs.resetDb();
-    logger.log('router did reset docs db and got', baseDocs);
-
-    res.status(200).send(baseDocs);
+    result = await controller.resetDb(__dirname + '/../dao/install-docs.sql');
+    logger.log(`router did route docs resetdb and got ${JSON.stringify(result)}`);
+    return res.status(200).send(true);
   } catch (err) {
-    res.status(500).send(err)
+    logger.log('router failed  to route docs resetdb and got', JSON.stringify(err));
+    return res.status(500).send(false);
   }
 });
 
-module.exports = router;
+router.get('/*', (req, res) => res.status(404).send('invalid'));
 
+module.exports = router;
